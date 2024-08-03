@@ -47,7 +47,7 @@ class Board(Base):  # 게시판 테이블
     user_id: Mapped[user_fk]
 
     # 게시판 생성한 유저
-    user: Mapped["User"] = relationship(back_populates="posts")
+    user: Mapped["User"] = relationship(back_populates="boards")
     # 게시판 내 게시글들
     posts: Mapped[List["Post"]] = relationship(back_populates="board")
 
