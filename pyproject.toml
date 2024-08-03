@@ -14,6 +14,8 @@ psycopg2-binary = "^2.9.9"
 alembic = "^1.13.2"
 black = "^24.8.0"
 redis = "^5.0.8"
+pydantic = {extras = ["email"], version = "^2.8.2"}
+passlib = "^1.7.4"
 
 
 [build-system]
