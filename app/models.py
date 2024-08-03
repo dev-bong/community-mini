@@ -10,8 +10,8 @@ from sqlalchemy.orm import relationship
 
 # * mapped_column() overrides
 int_pk = Annotated[int, mapped_column(primary_key=True)]
-user_fk = Annotated[int, mapped_column(ForeignKey("user.id"))]
-board_fk = Annotated[int, mapped_column(ForeignKey("board.id"))]
+user_fk = Annotated[int, mapped_column(ForeignKey("user.id", ondelete="CASCADE"))]
+board_fk = Annotated[int, mapped_column(ForeignKey("board.id", ondelete="CASCADE"))]
 date = Annotated[datetime, mapped_column(TIMESTAMP(timezone=True))]
 str30 = Annotated[str, mapped_column(String(30))]
 text = Annotated[str, mapped_column(Text)]
@@ -26,7 +26,7 @@ class User(Base):  # 사용자 테이블
 
     id: Mapped[int_pk]
     email: Mapped[str] = mapped_column(unique=True)
-    full_name: Mapped[str30]
+    full_name: Mapped[Optional[str30]]
     join_date: Mapped[date] = mapped_column(insert_default=func.now())
     password: Mapped[str]
 
