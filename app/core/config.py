@@ -14,6 +14,9 @@ class Settings:
     DB_HOST: str = config("DB_HOST")
     DB_DATABASE: str = config("DB_DATABASE")
 
+    REDIS_HOST: str = config("REDIS_HOST")
+    SESSION_EXP: int = 60 * 60 * 24  # 세션 만료 시간 : 1일
+
     def db_url_object(self):
         return URL.create(
             "postgresql+psycopg2",
