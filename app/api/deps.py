@@ -70,4 +70,4 @@ def get_curret_user_optional(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
-CurrentUserOptional = Annotated[User, Depends(get_curret_user_optional)]
+CurrentUserOptional = Annotated[User | None, Depends(get_curret_user_optional)]
