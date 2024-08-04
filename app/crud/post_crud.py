@@ -1,3 +1,6 @@
+from typing import List
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
@@ -61,3 +64,23 @@ def delete_post(db_session: Session, post: Post) -> None:
     db_session.add(post.board)
     db_session.delete(post)
     db_session.commit()
+
+
+def get_posts_in_board(
+    db_session: Session, board_id: int, limit: int, cursor: datetime | None = None
+) -> List[Post]:
+    """
+    게시판 내의 게시글들을 cursor pagining 하여 리턴 (최신 게시글 순서로..)
+    """
+    # 게시판 내 게시글들
+    statement = select(Post).filter_by(board_id=board_id)
+
+    if cursor:
+        # cursor보다 생성시간이 늦은 아이템들
+        statement = statement.filter(Post.create_date < cursor)
+
+    # create_date 역순으로 정렬, limite 적용
+    statement = statement.order_by(Post.create_date.desc()).limit(limit)
+
+    posts = db_session.execute(statement).scalars().all()
+    return posts
