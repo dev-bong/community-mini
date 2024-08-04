@@ -4,7 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Response, Cookie
 from starlette import status
 
-from app.api.deps import DatabaseDep, PasswordFormDep
+from app.api.deps.db_dep import DatabaseDep
+from app.api.deps.user_dep import PasswordFormDep
 from app.crud import user_crud
 from app.core import security
 from app.schemas import common_schema

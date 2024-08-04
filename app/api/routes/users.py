@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from starlette import status
 
 from app.schemas import user_schema
-from app.api.deps import DatabaseDep
+from app.api.deps.db_dep import DatabaseDep
 from app.crud import user_crud
 
 router = APIRouter()

@@ -5,7 +5,9 @@ from fastapi import APIRouter, HTTPException, Path
 from starlette import status
 
 from app.schemas import board_schema, common_schema
-from app.api.deps import DatabaseDep, CurrentUser, CurrentUserOptional, TargetBoard
+from app.api.deps.db_dep import DatabaseDep
+from app.api.deps.user_dep import CurrentUser, CurrentUserOptional
+from app.api.deps.board_dep import TargetBoard
 from app.crud import board_crud
 
 router = APIRouter()
