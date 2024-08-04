@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from app.models import Post, Board
+from app.models import Post
 from app.schemas.post_schema import PostCreate, PostUpdate
 
 
@@ -24,11 +24,6 @@ def create_post(
     db_session.add(post)
     db_session.commit()
     db_session.refresh(post)
-
-    # 게시판 게시글 수 업데이트
-    post.board.count += 1
-    db_session.add(post.board)
-    db_session.commit()
 
     return post
 
@@ -60,8 +55,6 @@ def delete_post(db_session: Session, post: Post) -> None:
     """
     게시글 삭제 (hard delete)
     """
-    post.board.count -= 1  # 게시판 게시글 수 업데이트
-    db_session.add(post.board)
     db_session.delete(post)
     db_session.commit()
 

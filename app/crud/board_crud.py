@@ -38,6 +38,12 @@ def update_board(db_session: Session, board: Board, board_update: BoardUpdate) -
     return board
 
 
+def update_count(db_session: Session, board: Board, num: int) -> None:
+    board.count += num
+    db_session.add(board)
+    db_session.commit()
+
+
 def delete_board(db_session: Session, board: Board) -> None:
     """
     게시판 삭제 (hard delete)
