@@ -99,9 +99,7 @@ def read_post_list(
     limit: Annotated[int, Query(description="한 페이지당 게시글 수", ge=1)] = 10,
     cursor: Annotated[
         datetime | None,
-        Query(
-            description="게시글 목록 중 마지막 게시글의 create_date 값"
-        ),
+        Query(description="게시글 목록 중 마지막 게시글의 create_date 값"),
     ] = None,
 ) -> Any:
     # 게시판이 private일 때
@@ -114,9 +112,10 @@ def read_post_list(
             )
         else:  # 로그인 상태인 경우 접근권한 체크
             check_access_right(req_user_id=current_user.id, target=board)
-    
 
-    posts = post_crud.get_posts_in_board(db_session=db_session, board_id=board.id, limit=limit, cursor=cursor)
+    posts = post_crud.get_posts_in_board(
+        db_session=db_session, board_id=board.id, limit=limit, cursor=cursor
+    )
     if not posts:
         if cursor is None:
             raise HTTPException(
@@ -124,17 +123,12 @@ def read_post_list(
                 detail="게시판 내 게시글들이 존재하지 않습니다.",
             )
         else:
-             raise HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="페이지의 끝입니다.",
             )
 
-    return {
-        "board_id": board.id,
-        "limit": limit,
-        "post_list": posts
-    }
-    
+    return {"board_id": board.id, "limit": limit, "post_list": posts}
 
 
 @router.get(
