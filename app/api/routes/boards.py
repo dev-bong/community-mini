@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path
 from starlette import status
@@ -7,14 +6,18 @@ from starlette import status
 from app.schemas import board_schema, common_schema
 from app.api.deps.db_dep import DatabaseDep
 from app.api.deps.user_dep import CurrentUser, CurrentUserOptional
-from app.api.deps.board_dep import TargetBoard, check_unique_name, check_access_right
+from app.api.deps.extra_dep import (
+    TargetBoard,
+    check_unique_name,
+    check_access_right,
+)
 from app.crud import board_crud
 
 router = APIRouter()
 
 
 @router.post(
-    "/",
+    "",
     response_model=board_schema.BoardPublic,
     status_code=status.HTTP_201_CREATED,
     summary="게시판 생성",
@@ -47,7 +50,7 @@ def update_board(
     board_info: board_schema.BoardUpdate,
     board: TargetBoard,
 ) -> Any:
-    check_access_right(req_user_id=current_user.id, target_board=board)
+    check_access_right(req_user_id=current_user.id, target=board)
 
     # 게시판의 이름을 수정하려는 경우 이름 중복 체크
     if (
@@ -66,14 +69,14 @@ def update_board(
     "/{board_id}",
     response_model=common_schema.Message,
     summary="게시판 삭제",
-    description="게시판 삭제",
+    description="내가 생성한 게시판 삭제",
 )
 def delete_board(
     db_session: DatabaseDep,
     current_user: CurrentUser,
     board: TargetBoard,
 ) -> Any:
-    check_access_right(req_user_id=current_user.id, target_board=board)
+    check_access_right(req_user_id=current_user.id, target=board)
 
     board_name = board.name
     board_crud.delete_board(db_session=db_session, board=board)
@@ -97,8 +100,8 @@ def read_board(
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="해당 게시판은 private 상태입니다. 로그인 후 다시 시도해보세요.",
+                detail=f"해당 '{board.name}' 게시판은 private 상태입니다. 로그인 후 다시 시도해보세요.",
             )
-        check_access_right(req_user_id=current_user.id, target_board=board)
+        check_access_right(req_user_id=current_user.id, target=board)
 
     return board
