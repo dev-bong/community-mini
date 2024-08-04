@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from app.models import Post
 from app.schemas.post_schema import PostCreate, PostUpdate
+from app.utils import time
 
 
 def create_post(
@@ -43,6 +44,7 @@ def update_post(db_session: Session, post: Post, post_update: PostUpdate) -> Pos
         post.title = post_update.title
     if post_update.content:
         post.content = post_update.content
+    post.update_date = time.now_datetime()
 
     db_session.add(post)
     db_session.commit()

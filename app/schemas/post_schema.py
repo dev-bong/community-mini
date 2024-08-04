@@ -17,6 +17,7 @@ class PostPublic(PostCreate):
     user_id: int = Field(default=..., description="게시글 생성한 유저 ID")
     board_id: int = Field(default=..., description="게시글이 속한 게시판 ID")
     create_date: datetime = Field(default=..., description="게시글이 생성된 시각")
+    update_date: datetime = Field(default=..., description="게시글 최근 업데이트 시각")
     user_info: UserBase = Field(default=..., description="게시글을 쓴 유저 정보")
 
     class Config:

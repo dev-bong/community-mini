@@ -5,6 +5,7 @@ from sqlalchemy import select, or_, and_
 
 from app.models import Board
 from app.schemas.board_schema import BoardCreate, BoardUpdate
+from app.utils import time
 
 
 def create_board(db_session: Session, board_create: BoardCreate, user_id: int) -> Board:
@@ -39,7 +40,12 @@ def update_board(db_session: Session, board: Board, board_update: BoardUpdate) -
 
 
 def update_count(db_session: Session, board: Board, num: int) -> None:
+    """
+    게시글 count 업데이트
+    - update_date도 함께 최신화해서 최근에 글이 올라온 게시판이 어디인지 알 수 있음
+    """
     board.count += num
+    board.update_date = time.now_datetime()
     db_session.add(board)
     db_session.commit()
 

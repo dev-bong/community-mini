@@ -17,6 +17,7 @@ class BoardPublic(BoardCreate):
     count: int = Field(default=..., description="게시판 내 게시글 개수")
     user_id: int = Field(default=..., description="게시판 생성한 유저 ID")
     create_date: datetime = Field(default=..., description="게시판이 생성된 시각")
+    update_date: datetime = Field(default=..., description="게시판 최근 업데이트 시각")
     user_info: UserBase = Field(default=..., description="게시판 생성한 유저 정보")
 
     class Config:
