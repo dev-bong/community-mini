@@ -8,7 +8,6 @@
 *gitmessage.txt
 migrations
 alembic.ini
-.env
 .venv
 
 __pycache__
