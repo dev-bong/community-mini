@@ -48,6 +48,7 @@ class Board(Base):  # 게시판 테이블
     public: Mapped[bool]  # public 여부
     count: Mapped[int]  # 게시판 내 게시글 개수
     create_date: Mapped[date] = mapped_column(insert_default=func.now())
+    update_date: Mapped[date] = mapped_column(insert_default=func.now())
     user_id: Mapped[user_fk]
 
     # 게시판 생성한 유저
@@ -65,6 +66,7 @@ class Post(Base):  # 게시글 테이블
     title: Mapped[str30]
     content: Mapped[text]
     create_date: Mapped[date] = mapped_column(insert_default=func.now())
+    update_date: Mapped[date] = mapped_column(insert_default=func.now())
     user_id: Mapped[user_fk]
     board_id: Mapped[board_fk]
 
