@@ -33,7 +33,7 @@ def create_user(db_session: Session, user_create: UserCreate) -> User:
 
 def authenticate(db_session: Session, email: str, password: str) -> User | None:
     """
-    평문 비밀번호와 DB에 저장된 암호화 비밀번호 비교
+    평문 비밀번호와 DB에 저장된 암호화 비밀번호 비교 + 이메일 검증
     """
     user = get_user_by_email(db_session=db_session, email=email)
     if not user or not verify_password(password, user.password):
