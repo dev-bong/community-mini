@@ -31,7 +31,7 @@ def create_session(user_id: int) -> str:
 def get_session(session_id: str) -> int | None:
     # 세션 정보 얻기 (user_id)
     user_id = redis_client.get(session_id)
-    return int(user_id)
+    return int(user_id) if user_id else None
 
 
 def delete_session(session_id: str):
