@@ -9,6 +9,9 @@ class UserBase(BaseModel):
         max_length=30,
     )
 
+    class Config:
+        from_attributes = True
+
 
 class UserCreate(UserBase):
     password: str = Field(default=..., description="비밀번호")

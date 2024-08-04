@@ -80,3 +80,7 @@ def check_relation(board: Board, post: Post) -> None:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"{board.name} 게시판에 해당 게시글이 존재하지 않습니다.",
         )
+
+
+def add_user_info(target: Board | Post) -> dict:
+    return {**target.__dict__, "user_info": target.user}

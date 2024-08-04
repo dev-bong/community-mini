@@ -10,6 +10,7 @@ from app.api.deps.extra_dep import (
     TargetBoard,
     check_unique_name,
     check_access_right,
+    add_user_info,
 )
 from app.crud import board_crud
 
@@ -34,7 +35,7 @@ def create_board(
         db_session=db_session, board_create=board_info, user_id=current_user.id
     )
 
-    return new_board
+    return add_user_info(target=new_board)
 
 
 @router.patch(
@@ -62,7 +63,7 @@ def update_board(
         db_session=db_session, board=board, board_update=board_info
     )
 
-    return updated_board
+    return add_user_info(target=updated_board)
 
 
 @router.delete(
@@ -114,7 +115,9 @@ def read_board_list(
                 detail="페이지의 끝입니다.",
             )
 
-    return {"page": page, "limit": limit, "board_list": boards}
+    boards_with_userinfo = [add_user_info(target=board) for board in boards]
+
+    return {"page": page, "limit": limit, "board_list": boards_with_userinfo}
 
 
 @router.get(
@@ -138,4 +141,4 @@ def read_board(
         else:  # 로그인 상태인 경우 접근권한 체크
             check_access_right(req_user_id=current_user.id, target=board)
 
-    return board
+    return add_user_info(target=board)

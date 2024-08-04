@@ -12,8 +12,9 @@ from app.api.deps.extra_dep import (
     TargetPost,
     check_access_right,
     check_relation,
+    add_user_info,
 )
-from app.crud import post_crud
+from app.crud import post_crud, board_crud
 
 router = APIRouter()
 
@@ -37,8 +38,11 @@ def create_post(
         user_id=current_user.id,
         board_id=board.id,
     )
+    res = add_user_info(target=new_post)
 
-    return new_post
+    board_crud.update_count(db_session=db_session, board=new_post.board, num=1)
+
+    return res
 
 
 @router.patch(
@@ -62,7 +66,7 @@ def update_post(
         db_session=db_session, post=post, post_update=post_info
     )
 
-    return updated_post
+    return add_user_info(target=updated_post)
 
 
 @router.delete(
@@ -81,6 +85,7 @@ def delete_post(
     check_access_right(req_user_id=current_user.id, target=post)
 
     post_title = post.title
+    board_crud.update_count(db_session=db_session, board=post.board, num=-1)
     post_crud.delete_post(db_session=db_session, post=post)
 
     return {"message": f"{post_title} 게시글이 삭제되었습니다."}
@@ -128,7 +133,9 @@ def read_post_list(
                 detail="페이지의 끝입니다.",
             )
 
-    return {"board_id": board.id, "limit": limit, "post_list": posts}
+    posts_with_userinfo = [add_user_info(target=post) for post in posts]
+
+    return {"board_id": board.id, "limit": limit, "post_list": posts_with_userinfo}
 
 
 @router.get(
@@ -155,4 +162,4 @@ def read_post(
         else:  # 로그인 상태인 경우 접근권한 체크
             check_access_right(req_user_id=current_user.id, target=board)
 
-    return post
+    return add_user_info(target=post)
