@@ -92,7 +92,9 @@ def get_boards(
         # 로그인 상태 X : public인 게시판들만 모음
         statement = select(Board).filter(Board.public == True)
 
-    statement = statement.order_by(Board.count.desc())  # 게시글 개수 기준으로 정렬
+    statement = statement.order_by(
+        Board.count.desc(), Board.update_date.desc()
+    )  # 게시글 수 기준 정렬, 게시글 수가 같으면 최근에 게시글이 올라온 순으로
     statement = statement.offset(offset).limit(limit)  # offset 페이징 적용
 
     boards = db_session.execute(statement).scalars().all()
