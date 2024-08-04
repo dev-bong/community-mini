@@ -7,7 +7,7 @@ from starlette import status
 from app.schemas import board_schema, common_schema
 from app.api.deps.db_dep import DatabaseDep
 from app.api.deps.user_dep import CurrentUser, CurrentUserOptional
-from app.api.deps.board_dep import TargetBoard
+from app.api.deps.board_dep import TargetBoard, check_unique_name, check_access_right
 from app.crud import board_crud
 
 router = APIRouter()
@@ -25,13 +25,7 @@ def create_board(
     current_user: CurrentUser,
     board_info: board_schema.BoardCreate,
 ) -> Any:
-    # 게시판 이름 중복 체크
-    board = board_crud.get_board_by_name(db_session=db_session, name=board_info.name)
-    if board:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="이미 존재하는 게시판 이름입니다.",
-        )
+    check_unique_name(db_session=db_session, name=board_info.name)
 
     new_board = board_crud.create_board(
         db_session=db_session, board_create=board_info, user_id=current_user.id
@@ -53,25 +47,13 @@ def update_board(
     board_info: board_schema.BoardUpdate,
     board: TargetBoard,
 ) -> Any:
-    # 수정하려는 게시판을 생성한 유저 ID와 요청을 보낸 유저 ID가 다른 경우
-    if board.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="다른 유저가 생성한 게시판은 수정할 수 없습니다.",
-        )
+    check_access_right(req_user_id=current_user.id, target_board=board)
 
     # 게시판의 이름을 수정하려는 경우 이름 중복 체크
     if (
         board_info.name and board_info.name != board.name
     ):  # 수정하려는 게시판은 중복 체크 제외
-        name_board = board_crud.get_board_by_name(
-            db_session=db_session, name=board_info.name
-        )
-        if name_board:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="이미 존재하는 게시판 이름입니다.",
-            )
+        check_unique_name(db_session=db_session, name=board_info.name)
 
     updated_board = board_crud.update_board(
         db_session=db_session, board=board, board_update=board_info
@@ -91,12 +73,7 @@ def delete_board(
     current_user: CurrentUser,
     board: TargetBoard,
 ) -> Any:
-    # 삭제하려는 게시판을 생성한 유저 ID와 요청을 보낸 유저 ID가 다른 경우
-    if board.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="다른 유저가 생성한 게시판은 수정할 수 없습니다.",
-        )
+    check_access_right(req_user_id=current_user.id, target_board=board)
 
     board_name = board.name
     board_crud.delete_board(db_session=db_session, board=board)
@@ -122,11 +99,6 @@ def read_board(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="해당 게시판은 private 상태입니다. 로그인 후 다시 시도해보세요.",
             )
-        # 읽기 요청 사용자와 게시판을 생성한 사용자가 일치하지 않는 경우
-        elif current_user.id != board.user_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="해당 게시판에 접근 권한이 없습니다.",
-            )
+        check_access_right(req_user_id=current_user.id, target_board=board)
 
     return board
