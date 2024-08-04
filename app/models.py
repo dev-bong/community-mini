@@ -31,9 +31,13 @@ class User(Base):  # 사용자 테이블
     password: Mapped[str]
 
     # 유저가 생성한 게시판들
-    boards: Mapped[List["Board"]] = relationship(back_populates="user")
+    boards: Mapped[List["Board"]] = relationship(
+        back_populates="user", cascade="all, delete"
+    )
     # 유저가 쓴 게시글들
-    posts: Mapped[List["Post"]] = relationship(back_populates="user")
+    posts: Mapped[List["Post"]] = relationship(
+        back_populates="user", cascade="all, delete"
+    )
 
 
 class Board(Base):  # 게시판 테이블
@@ -49,7 +53,9 @@ class Board(Base):  # 게시판 테이블
     # 게시판 생성한 유저
     user: Mapped["User"] = relationship(back_populates="boards")
     # 게시판 내 게시글들
-    posts: Mapped[List["Post"]] = relationship(back_populates="board")
+    posts: Mapped[List["Post"]] = relationship(
+        back_populates="board", cascade="all, delete"
+    )
 
 
 class Post(Base):  # 게시글 테이블
