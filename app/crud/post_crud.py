@@ -68,7 +68,7 @@ def delete_post(db_session: Session, post: Post) -> None:
 
 def get_posts_in_board(
     db_session: Session, board_id: int, limit: int, cursor: datetime | None = None
-) -> List[Post]:
+) -> List[Post] | None:
     """
     게시판 내의 게시글들을 cursor pagining 하여 리턴 (최신 게시글 순서로..)
     """
