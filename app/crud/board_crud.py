@@ -1,5 +1,7 @@
+from typing import List
+
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 
 from app.models import Board
 from app.schemas.board_schema import BoardCreate, BoardUpdate
@@ -58,3 +60,28 @@ def get_board_by_name(db_session: Session, name: str) -> Board | None:
     statement = select(Board).filter_by(name=name)
     user = db_session.execute(statement).scalar_one_or_none()
     return user
+
+
+def get_boards(
+    db_session: Session, user_id: int | None, offset: int, limit: int
+) -> List[Board] | None:
+    """
+    접근 가능한 게시판 목록 조회 (offset pagination, 게시판 내 게시글 많은 순서로..)
+    """
+    if isinstance(user_id, int):
+        # 로그인 상태 O : public이거나, private면서 본인이 생성한 게시판들
+        statement = select(Board).filter(
+            or_(
+                Board.public == True,
+                and_(Board.public == False, Board.user_id == user_id),
+            )
+        )
+    else:
+        # 로그인 상태 X : public인 게시판들만 모음
+        statement = select(Board).filter(Board.public == True)
+
+    statement = statement.order_by(Board.count.desc())  # 게시글 개수 기준으로 정렬
+    statement = statement.offset(offset).limit(limit)  # offset 페이징 적용
+
+    boards = db_session.execute(statement).scalars().all()
+    return boards

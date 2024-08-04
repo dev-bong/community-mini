@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, Annotated
 
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Query
 from starlette import status
 
 from app.schemas import board_schema, common_schema
@@ -85,10 +85,43 @@ def delete_board(
 
 
 @router.get(
+    "",
+    response_model=board_schema.BoardList,
+    summary="게시판 목록 조회",
+    description="접근 가능한 게시판 목록 조회 (offset pagination)",
+)
+def read_board_list(
+    db_session: DatabaseDep,
+    current_user: CurrentUserOptional,
+    page: Annotated[int, Query(description="현재 페이지 번호", ge=1)] = 1,
+    limit: Annotated[int, Query(description="한 페이지당 게시글 수", ge=1)] = 10,
+) -> Any:
+    current_user_id = current_user.id if current_user else None
+    offset = limit * (page - 1)
+
+    boards = board_crud.get_boards(
+        db_session=db_session, user_id=current_user_id, offset=offset, limit=limit
+    )
+    if not boards:
+        if page == 1:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="접근 가능한 게시판들이 존재하지 않습니다.",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="페이지의 끝입니다.",
+            )
+
+    return {"page": page, "limit": limit, "board_list": boards}
+
+
+@router.get(
     "/{board_id}",
     response_model=board_schema.BoardPublic,
-    summary="게시판 읽기",
-    description="게시판 정보 읽기",
+    summary="게시판 조회",
+    description="게시판 조회",
 )
 def read_board(
     current_user: CurrentUserOptional,
@@ -102,6 +135,7 @@ def read_board(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"해당 '{board.name}' 게시판은 private 상태입니다. 로그인 후 다시 시도해보세요.",
             )
-        check_access_right(req_user_id=current_user.id, target=board)
+        else:  # 로그인 상태인 경우 접근권한 체크
+            check_access_right(req_user_id=current_user.id, target=board)
 
     return board

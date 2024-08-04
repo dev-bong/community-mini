@@ -1,3 +1,6 @@
+from typing import List
+from datetime import datetime
+
 from pydantic import BaseModel, Field, model_validator
 
 from app.utils.validators import check_all_empty
@@ -12,6 +15,7 @@ class BoardPublic(BoardCreate):
     id: int = Field(default=..., description="게시판 ID")
     count: int = Field(default=..., description="게시판 내 게시글 개수")
     user_id: int = Field(default=..., description="게시판 생성한 유저 ID")
+    create_date: datetime = Field(default=..., description="게시글이 생성된 시각")
 
     class Config:
         from_attributes = True
@@ -22,3 +26,11 @@ class BoardUpdate(BaseModel):
     public: bool | None = Field(default=None, description="게시판 공개 여부")
 
     validator = model_validator(mode="before")(check_all_empty)
+
+
+class BoardList(BaseModel):
+    page: int = Field(default=..., description="현재 페이지 번호")
+    limit: int = Field(default=..., description="페이지 당 게시판 수")
+    board_list: List[BoardPublic] | None = Field(
+        default=None, title="접근 가능한 게시판 목록"
+    )
