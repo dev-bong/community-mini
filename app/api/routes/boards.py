@@ -5,13 +5,10 @@ from fastapi import APIRouter, HTTPException, Path
 from starlette import status
 
 from app.schemas import board_schema, common_schema
-from app.api.deps import DatabaseDep, CurrentUser, CurrentUserOptional
+from app.api.deps import DatabaseDep, CurrentUser, CurrentUserOptional, TargetBoard
 from app.crud import board_crud
 
 router = APIRouter()
-
-# 게시판 ID 타입 : path parameter 용도
-board_id = Annotated[int, Path(default=..., description="게시판 ID")]
 
 
 @router.post(
@@ -42,7 +39,7 @@ def create_board(
 
 
 @router.patch(
-    "/{id}",
+    "/{board_id}",
     response_model=board_schema.BoardPublic,
     status_code=status.HTTP_201_CREATED,
     summary="게시판 수정",
@@ -52,9 +49,8 @@ def update_board(
     db_session: DatabaseDep,
     current_user: CurrentUser,
     board_info: board_schema.BoardUpdate,
-    id: board_id,
+    board: TargetBoard,
 ) -> Any:
-    board = board_crud.get_board_by_id(db_session=db_session, id=id)
     # 수정하려는 게시판을 생성한 유저 ID와 요청을 보낸 유저 ID가 다른 경우
     if board.user_id != current_user.id:
         raise HTTPException(
@@ -83,7 +79,7 @@ def update_board(
 
 
 @router.delete(
-    "/{id}",
+    "/{board_id}",
     response_model=common_schema.Message,
     summary="게시판 삭제",
     description="게시판 삭제",
@@ -91,14 +87,8 @@ def update_board(
 def delete_board(
     db_session: DatabaseDep,
     current_user: CurrentUser,
-    id: board_id,
+    board: TargetBoard,
 ) -> Any:
-    board = board_crud.get_board_by_id(db_session=db_session, id=id)
-    if not board:  # 이미 삭제되었거나 존재하지 않는 ID인 경우
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="존재하지 않는 게시판입니다.",
-        )
     # 삭제하려는 게시판을 생성한 유저 ID와 요청을 보낸 유저 ID가 다른 경우
     if board.user_id != current_user.id:
         raise HTTPException(
@@ -113,23 +103,15 @@ def delete_board(
 
 
 @router.get(
-    "/{id}",
+    "/{board_id}",
     response_model=board_schema.BoardPublic,
     summary="게시판 읽기",
     description="게시판 정보 읽기",
 )
 def read_board(
-    db_session: DatabaseDep,
     current_user: CurrentUserOptional,
-    id: board_id,
+    board: TargetBoard,
 ) -> Any:
-    board = board_crud.get_board_by_id(db_session=db_session, id=id)
-    if not board:  # 이미 삭제되었거나 존재하지 않는 ID인 경우
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="존재하지 않는 게시판입니다.",
-        )
-
     # 게시판이 private일 때
     if board.public is False:
         # 로그인 상태가 아닌 경우

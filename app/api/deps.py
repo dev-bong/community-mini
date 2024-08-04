@@ -1,14 +1,14 @@
 from typing import Annotated
 
 from sqlalchemy.orm import Session
-from fastapi import Depends, Cookie, HTTPException
+from fastapi import Depends, Cookie, HTTPException, Path
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
 from app.core.db import SessionLocal
 from app.core import security
-from app.crud import user_crud
-from app.models import User
+from app.crud import user_crud, board_crud
+from app.models import User, Board
 
 
 def get_db():  # 데이터베이스 세션 관리
@@ -71,3 +71,24 @@ def get_curret_user_optional(
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentUserOptional = Annotated[User | None, Depends(get_curret_user_optional)]
+
+
+# 게시판 ID 타입 : path parameter 용도
+board_id = Annotated[int, Path(default=..., description="게시판 ID")]
+
+
+def get_target_board(db_session: DatabaseDep, board_id: board_id) -> Board:
+    """
+    수정, 삭제, 읽기의 타겟인 게시판 가져오기
+    """
+    board = board_crud.get_board_by_id(db_session=db_session, id=board_id)
+    if not board:  # 존재하지 않는 ID인 경우
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="존재하지 않는 게시판입니다.",
+        )
+
+    return board
+
+
+TargetBoard = Annotated[Board, Depends(get_target_board)]
